@@ -1,0 +1,634 @@
+/* ============================================================
+   今日やるリスト — 全体スタイル（マインクラフト“雰囲気”UI）
+
+   デザインの意図:
+   - 四角くてブロック感のある見た目（角丸ほぼなし＋太い枠＋ドット影）
+   - 自然でゲーム的な色（土・草・石・鉄・金・エメラルド）
+   - 見出し/ボタンはドット風フォント、本文/期限は標準フォントで読みやすく
+   - スマホ前提で、ボタンは大きく（最低48px）押しやすく
+   ============================================================ */
+
+/* ---- ドット風フォントをローカルから読み込む（ネット接続不要） ---- */
+@font-face {
+  font-family: 'DotGothic16';
+  src: url('/fonts/DotGothic16-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---- 色のパレット（ブロック素材イメージ） ---- */
+:root {
+  --dirt:    #8b5a2b; /* 土 */
+  --dirt-d:  #5e3c1c;
+  --grass:   #5ba53a; /* 草 */
+  --grass-d: #3c7a24;
+  --stone:   #8a8a8a; /* 石 */
+  --stone-d: #5f5f5f;
+  --iron:    #d6d6d6; /* 鉄 */
+  --iron-d:  #9a9a9a;
+  --gold:    #e8b923; /* 金 */
+  --emerald: #1fbf6b; /* エメラルド */
+  --emerald-d:#138a4c;
+  --diamond: #4fd8d2; /* ダイヤ */
+
+  /* 危険度の色 */
+  --red:     #d63b2f; /* 期限切れ・今日まで */
+  --orange:  #e8772a; /* 明日まで */
+  --yellow:  #e8c12a; /* 今週中 */
+  --green:   #4caf50; /* 余裕あり */
+  --teal:    #1fbf9c; /* 完了 */
+
+  --ink:     #2b2b2b; /* 本文の文字色 */
+  --paper:   #f3efe6; /* カード地の明るい色 */
+
+  /* フォント */
+  --font-game: 'DotGothic16', 'Courier New', monospace; /* 見出し・ボタン */
+  --font-body: system-ui, -apple-system, 'Segoe UI', 'Hiragino Sans',
+               'Yu Gothic UI', 'Meiryo', sans-serif;     /* 本文・期限 */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  /* iPhoneで勝手に文字サイズが変わらないように */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  /* 草原＋土のような縦グラデ背景 */
+  background-color: #6b8f3a;
+  background-image:
+    linear-gradient(180deg, #7eb33f 0%, #5e8a32 35%, #6b4a28 100%);
+  /* iOS Safariは background-attachment:fixed が不安定なので使わない。
+     代わりに dvh（動的ビューポート）で全画面を覆う */
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none; /* 引っぱりすぎたときの白い余白を抑える */
+}
+
+/* タップ時の青いハイライトを消し、二重タップ拡大の遅延もなくす */
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ヘッダーのロゴに置くダイヤの剣アイコン */
+.logo-icon {
+  width: 26px;
+  height: 26px;
+  vertical-align: -5px;
+  margin-right: 4px;
+  /* ドット絵をくっきり拡大表示 */
+  image-rendering: pixelated;
+}
+
+/* ブロック風の「ドット影（立体ふち）」を作る共通の影
+   外側に濃い色、内側にハイライトを置いてマイクラのブロックっぽくする */
+.block-edge {
+  box-shadow:
+    inset -4px -4px 0 rgba(0, 0, 0, 0.28),
+    inset 4px 4px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* ============================================================
+   レイアウト
+   ============================================================ */
+.app {
+  max-width: 560px;        /* スマホ〜タブレット幅。PCでも中央寄せ */
+  margin: 0 auto;
+  /* 左右はノッチ回避、下は固定ボタン＋ホームバー分の余白を確保 */
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+  padding-bottom: calc(130px + env(safe-area-inset-bottom));
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: linear-gradient(180deg, #6b4a28, #5e3c1c);
+  margin: 0 calc(-1 * max(12px, env(safe-area-inset-right)))
+            12px calc(-1 * max(12px, env(safe-area-inset-left)));
+  /* 上はノッチ/ステータスバーの分だけ下げる */
+  padding: calc(10px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+           10px max(12px, env(safe-area-inset-left));
+  border-bottom: 4px solid var(--dirt-d);
+}
+
+.app-logo {
+  font-family: var(--font-game);
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+  font-size: 22px;
+  margin: 4px 0 8px;
+  letter-spacing: 1px;
+}
+
+/* ============================================================
+   親の確認用まとめ（小さく）
+   ============================================================ */
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.summary-label {
+  font-family: var(--font-game);
+  font-size: 11px;
+  color: #ffe9b0;
+}
+.summary-items {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.summary-item {
+  flex: 1;
+  min-width: 48px;
+  text-align: center;
+  padding: 4px 2px;
+  border: 2px solid rgba(0,0,0,0.35);
+  background: rgba(255,255,255,0.9);
+  font-size: 10px;
+  line-height: 1.2;
+}
+.summary-item b { display: block; font-size: 16px; }
+.summary-item.s-okure   { background: #ffd9d4; }
+.summary-item.s-kyou    { background: #ffe0cc; }
+.summary-item.s-ashita  { background: #fff0cc; }
+.summary-item.s-dasudake{ background: #d6f0ff; }
+.summary-item.s-kanryo  { background: #cdf3e6; }
+
+/* ============================================================
+   今日やること（最重要・最大）
+   ============================================================ */
+.today-block {
+  background: linear-gradient(180deg, var(--grass), var(--grass-d));
+  border: 5px solid #2f5e1a;
+  box-shadow:
+    inset -5px -5px 0 rgba(0,0,0,0.25),
+    inset 5px 5px 0 rgba(255,255,255,0.25),
+    0 6px 0 rgba(0,0,0,0.3);
+  padding: 14px 12px 16px;
+  margin-bottom: 18px;
+}
+.today-head { margin-bottom: 12px; }
+.today-title {
+  font-family: var(--font-game);
+  font-size: 30px;             /* 一番大きい見出し */
+  color: #fff;
+  text-shadow: 3px 3px 0 #1f3d12;
+  margin: 0;
+}
+.today-sub {
+  font-family: var(--font-game);
+  color: #eaffd6;
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+.today-empty {
+  background: rgba(255,255,255,0.92);
+  border: 3px dashed var(--grass-d);
+  padding: 22px 12px;
+  text-align: center;
+  font-family: var(--font-game);
+  font-size: 18px;
+  line-height: 1.6;
+}
+.today-empty span { font-family: var(--font-body); font-size: 13px; color: #555; }
+
+/* ============================================================
+   学校で出すだけ（かなり目立たせる）
+   ============================================================ */
+.ready-block {
+  background: repeating-linear-gradient(
+    45deg, #ffd34d, #ffd34d 14px, #f2bd2e 14px, #f2bd2e 28px
+  );
+  border: 5px solid #6b4a28;
+  box-shadow: inset -5px -5px 0 rgba(0,0,0,0.2),
+              inset 5px 5px 0 rgba(255,255,255,0.3);
+  padding: 12px;
+  margin-bottom: 18px;
+}
+.ready-title {
+  font-family: var(--font-game);
+  font-size: 22px;
+  color: #5e3c1c;
+  text-shadow: 1px 1px 0 #fff3c4;
+  margin: 0;
+}
+.ready-sub {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: #6b4a28;
+  margin: 4px 0 10px;
+  font-size: 13px;
+}
+
+/* ============================================================
+   セクション（遅れ・今日やる…完了）
+   ============================================================ */
+.section { margin-bottom: 14px; }
+.section-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 4px solid rgba(0,0,0,0.4);
+  background: var(--stone);
+  color: #fff;
+  font-family: var(--font-game);
+  font-size: 18px;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,0.25),
+              inset 3px 3px 0 rgba(255,255,255,0.18);
+}
+.section-title { flex: 1; text-align: left; }
+.section-count {
+  background: rgba(0,0,0,0.35);
+  padding: 0 8px;
+  min-width: 26px;
+  text-align: center;
+}
+/* セクションごとの色（見出しバー） */
+.accent-okure  .section-head { background: var(--red); }
+.accent-kyou   .section-head { background: #e0552e; }
+.accent-ashita .section-head { background: var(--orange); }
+.accent-konshu .section-head { background: var(--yellow); color:#3b2f00; text-shadow:none; }
+.accent-yoyu   .section-head { background: var(--green); }
+.accent-kanryo .section-head { background: var(--teal); }
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* ============================================================
+   提出物カード（ブロック風）
+   状態で素材感、危険度で左の太い色帯を変える
+   ============================================================ */
+.card {
+  position: relative;
+  background: var(--paper);
+  border: 4px solid var(--dirt-d);
+  padding: 10px 12px 12px;
+  /* 状態ごとの素材感は下で上書き。基本はブロックのふち影 */
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,0.22),
+              inset 4px 4px 0 rgba(255,255,255,0.4),
+              0 4px 0 rgba(0,0,0,0.25);
+}
+
+/* --- 状態ごとの見た目（土→石→鉄→エメラルド） --- */
+.card.block-mada {            /* まだ：土／木の看板っぽい茶系 */
+  background: linear-gradient(180deg, #c79b6e, #b07d4a);
+  border-color: var(--dirt-d);
+}
+.card.block-yatteru {         /* やってる：石ブロック */
+  background: linear-gradient(180deg, #cfcfcf, #a9a9a9);
+  border-color: var(--stone-d);
+}
+.card.block-owatta {          /* 終わった：鉄ブロック */
+  background: linear-gradient(180deg, #ededed, #c4c4c4);
+  border-color: var(--iron-d);
+}
+.card.block-dashita {         /* 出した：エメラルド／達成感 */
+  background: linear-gradient(180deg, #6ff0b8, var(--emerald));
+  border-color: var(--emerald-d);
+}
+
+/* --- 危険度ごとの「左の太い色帯」 --- */
+.card.danger-overdue  { border-left-width: 12px; border-left-color: var(--red); }
+.card.danger-today    { border-left-width: 12px; border-left-color: #e0552e; }
+.card.danger-tomorrow { border-left-width: 12px; border-left-color: var(--orange); }
+.card.danger-soon     { border-left-width: 12px; border-left-color: var(--yellow); }
+.card.danger-normal   { border-left-width: 12px; border-left-color: var(--green); }
+/* 出した(完了)は青緑で上書き */
+.card.block-dashita   { border-left-width: 12px; border-left-color: var(--teal); }
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.subject-badge {
+  font-family: var(--font-game);
+  background: #3a2a18;
+  color: #ffe9b0;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.status-badge {
+  margin-left: auto;
+  font-family: var(--font-game);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.danger-badge {
+  font-family: var(--font-game);
+  font-size: 12px;
+  padding: 2px 8px;
+  color: #fff;
+}
+.danger-text-overdue  { background: var(--red); }
+.danger-text-today    { background: #e0552e; }
+.danger-text-tomorrow { background: var(--orange); }
+.danger-text-soon     { background: var(--yellow); color:#3b2f00; }
+
+/* タイトルは読みやすさ優先で標準フォント＋太字 */
+.card-title {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 19px;
+  margin: 2px 0 6px;
+  color: #1f1a12;
+}
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2b2b2b;
+}
+.meta-due b { color: #a8311f; }
+.card.block-dashita .meta-due b { color: #0c5b3a; }
+.card-memo {
+  font-size: 13px;
+  color: #3a3a3a;
+  margin: 8px 0 0;
+  background: rgba(255,255,255,0.5);
+  padding: 6px 8px;
+  border-left: 3px solid rgba(0,0,0,0.2);
+}
+
+/* --- 状態ボタン --- */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: stretch;
+}
+.btn-advance {
+  flex: 1;
+  min-height: 50px;             /* 大きく押しやすい */
+  font-family: var(--font-game);
+  font-size: 17px;
+  color: #fff;
+  background: linear-gradient(180deg, #5ba53a, var(--grass-d));
+  border: 3px solid #2f5e1a;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #1f3d12;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,0.25),
+              inset 3px 3px 0 rgba(255,255,255,0.25);
+}
+.btn-advance:active { transform: translateY(2px); }
+.btn-advance.done {
+  background: linear-gradient(180deg, #7fe0c0, var(--emerald-d));
+  border-color: var(--emerald-d);
+  cursor: default;
+}
+.btn-revert {
+  min-width: 64px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  background: rgba(0,0,0,0.12);
+  border: 2px solid rgba(0,0,0,0.3);
+  cursor: pointer;
+}
+.btn-revert:active { transform: translateY(2px); }
+
+/* --- 小さい操作（直す・コピー・来週分・消す）--- */
+.card-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.card-tools button {
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.65);
+  border: 2px solid rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+.card-tools .tool-danger { color: #b3261e; }
+.card-tools button:active { transform: translateY(1px); }
+
+/* ============================================================
+   完了演出（出した直後だけ）
+   ============================================================ */
+.card.just-cleared {
+  animation: clearGlow 1.2s ease-out;
+}
+@keyframes clearGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.9); }
+  40%  { box-shadow: 0 0 24px 8px rgba(120,255,200,0.9); }
+  100% { box-shadow: inset -4px -4px 0 rgba(0,0,0,0.22),
+                      inset 4px 4px 0 rgba(255,255,255,0.4),
+                      0 4px 0 rgba(0,0,0,0.25); }
+}
+.clear-badge {
+  position: absolute;
+  top: -14px; right: 8px;
+  font-family: var(--font-game);
+  background: var(--gold);
+  color: #5e3c1c;
+  padding: 4px 12px;
+  border: 3px solid #5e3c1c;
+  font-size: 16px;
+  transform: rotate(-6deg);
+  animation: pop 0.4s ease-out;
+  z-index: 5;
+}
+@keyframes pop {
+  0% { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+  100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+}
+
+/* ============================================================
+   ツールバー（並び替え・絞り込み）
+   ============================================================ */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 14px;
+}
+.tool-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.35);
+  padding: 6px 8px;
+  border: 2px solid rgba(0,0,0,0.4);
+}
+.tool-field span {
+  font-family: var(--font-game);
+  font-size: 12px;
+  color: #ffe9b0;
+}
+.tool-field select {
+  flex: 1;
+  font-size: 14px;
+  padding: 6px;
+  border: 2px solid rgba(0,0,0,0.3);
+  background: #fff;
+  min-height: 40px;
+}
+
+/* ============================================================
+   追加ボタン（画面下に固定）
+   ============================================================ */
+.fab {
+  position: fixed;
+  left: 50%;
+  /* iPhoneのホームバーに重ならないよう、下に余白を足す */
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(536px, calc(100% - 24px));
+  min-height: 60px;
+  font-family: var(--font-game);
+  font-size: 22px;
+  color: #fff;
+  background: linear-gradient(180deg, #f0c64b, var(--gold));
+  border: 4px solid #6b4a28;
+  text-shadow: 1px 1px 0 #6b4a28;
+  cursor: pointer;
+  z-index: 30;
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,0.22),
+              inset 4px 4px 0 rgba(255,255,255,0.35),
+              0 4px 0 rgba(0,0,0,0.35);
+}
+.fab:active { transform: translateX(-50%) translateY(3px); }
+
+.hint {
+  text-align: center;
+  color: #fff;
+  font-family: var(--font-game);
+  text-shadow: 1px 1px 0 #000;
+  padding: 20px;
+}
+
+/* ============================================================
+   追加/編集フォーム（モーダル）
+   ============================================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 12px 40px;
+  overflow-y: auto;
+  z-index: 50;
+}
+.modal {
+  width: 100%;
+  max-width: 460px;
+  background: var(--paper);
+  border: 5px solid var(--dirt-d);
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,0.2),
+              inset 4px 4px 0 rgba(255,255,255,0.4);
+  padding: 16px;
+}
+.modal-title {
+  font-family: var(--font-game);
+  font-size: 22px;
+  margin: 0 0 12px;
+  color: #5e3c1c;
+}
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+.field > span {
+  display: block;
+  font-family: var(--font-game);
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #4a3420;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 16px;            /* iOSで自動ズームしない最小サイズ */
+  padding: 10px;
+  border: 3px solid var(--dirt-d);
+  background: #fff;
+}
+.field textarea { resize: vertical; }
+
+/* 作業量・状態の選択ボタン */
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.choice {
+  flex: 1;
+  min-width: 64px;
+  min-height: 46px;
+  font-family: var(--font-game);
+  font-size: 14px;
+  background: #fff;
+  border: 3px solid var(--dirt-d);
+  cursor: pointer;
+}
+.choice.on {
+  background: var(--grass);
+  color: #fff;
+  text-shadow: 1px 1px 0 #1f3d12;
+}
+.choice:active { transform: translateY(2px); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.btn-cancel, .btn-save {
+  flex: 1;
+  min-height: 54px;
+  font-family: var(--font-game);
+  font-size: 18px;
+  cursor: pointer;
+  border: 4px solid;
+}
+.btn-cancel {
+  background: #e5ded0;
+  border-color: var(--stone-d);
+}
+.btn-save {
+  background: linear-gradient(180deg, #5ba53a, var(--grass-d));
+  border-color: #2f5e1a;
+  color: #fff;
+  text-shadow: 1px 1px 0 #1f3d12;
+}
+.btn-save:active, .btn-cancel:active { transform: translateY(2px); }
+
+/* ============================================================
+   PCなど広い画面でのちょっとした調整
+   ============================================================ */
+@media (min-width: 600px) {
+  .today-title { font-size: 34px; }
+}
