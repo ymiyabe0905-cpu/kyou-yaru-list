@@ -11,7 +11,9 @@
 /* ---- ドット風フォントをローカルから読み込む（ネット接続不要） ---- */
 @font-face {
   font-family: 'DotGothic16';
-  src: url('/fonts/DotGothic16-Regular.ttf') format('truetype');
+  /* src/assets に置いた実ファイルを相対参照。
+     Vite が公開URL(サブパス含む)を自動で解決＝GitHub Pagesでも崩れない */
+  src: url('../assets/fonts/DotGothic16-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

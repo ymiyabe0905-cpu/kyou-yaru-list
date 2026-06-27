@@ -122,7 +122,8 @@ export default function App() {
       {/* ヘッダー */}
       <header className="app-header">
         <h1 className="app-logo">
-          <img src="/favicon.svg" alt="" className="logo-icon" />
+          {/* import.meta.env.BASE_URL でサブパス(/kyou-yaru-list/)にも対応 */}
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="logo-icon" />
           今日やるリスト
         </h1>
         <ParentSummary counts={counts} />
