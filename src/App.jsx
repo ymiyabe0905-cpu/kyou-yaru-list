@@ -122,8 +122,9 @@ export default function App() {
       {/* ヘッダー */}
       <header className="app-header">
         <h1 className="app-logo">
-          {/* import.meta.env.BASE_URL でサブパス(/kyou-yaru-list/)にも対応 */}
-          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="logo-icon" />
+          {/* タイトル横はダイヤの剣。アプリ(タブ/ホーム)アイコンとは別ファイル。
+              import.meta.env.BASE_URL でサブパス(/kyou-yaru-list/)にも対応 */}
+          <img src={`${import.meta.env.BASE_URL}sword.svg`} alt="" className="logo-icon" />
           今日やるリスト
         </h1>
         <ParentSummary counts={counts} />
