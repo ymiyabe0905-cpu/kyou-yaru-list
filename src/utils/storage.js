@@ -7,6 +7,7 @@
 // ============================================================
 
 const STORAGE_KEY = 'kyou-yaru-list:tasks'
+const SEEDED_KEY = 'kyou-yaru-list:seeded' // 初期データを入れ終わった印
 
 // 保存されている提出物の一覧を読み込む（無ければ空配列）
 export function loadTasks() {
@@ -28,5 +29,20 @@ export function saveTasks(tasks) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
   } catch (e) {
     console.warn('データの保存に失敗しました', e)
+  }
+}
+
+// 初期データ（夏休み課題）をもう入れたか？
+// 一度でも入れたら true。これで、課題を全部消しても勝手に復活しないようにする。
+export function isSeeded() {
+  return localStorage.getItem(SEEDED_KEY) === '1'
+}
+
+// 初期データを入れた印をつける
+export function markSeeded() {
+  try {
+    localStorage.setItem(SEEDED_KEY, '1')
+  } catch (e) {
+    console.warn('初期化フラグの保存に失敗しました', e)
   }
 }

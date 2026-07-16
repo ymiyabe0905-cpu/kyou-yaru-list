@@ -4,9 +4,10 @@
 // 変更があるたびに自動でローカルストレージへ保存する。
 // ============================================================
 import { useEffect, useState } from 'react'
-import { loadTasks, saveTasks } from '../utils/storage.js'
+import { loadTasks, saveTasks, isSeeded, markSeeded } from '../utils/storage.js'
 import { STATUS_ORDER } from '../constants.js'
 import { addDays } from '../utils/date.js'
+import { seedTasks } from '../seedTasks.js'
 
 // ユニークなIDを作る（時刻＋ランダム。1人用なので十分）
 function newId() {
@@ -14,8 +15,17 @@ function newId() {
 }
 
 export function useTasks() {
-  // 最初の表示時にローカルストレージから読み込む
-  const [tasks, setTasks] = useState(() => loadTasks())
+  // 最初の表示時にローカルストレージから読み込む。
+  // まだ何も入っておらず、初期データも入れていない「初回だけ」、
+  // 2年生の夏休み課題を自動で入れる。
+  const [tasks, setTasks] = useState(() => {
+    const loaded = loadTasks()
+    if (loaded.length === 0 && !isSeeded()) {
+      markSeeded()
+      return seedTasks
+    }
+    return loaded
+  })
 
   // tasks が変わるたびに保存（ブラウザを閉じても消えない）
   useEffect(() => {
